@@ -7,15 +7,16 @@ This is a script created to capture all the steps listed by AWS in their Adminis
 Once the AWS Client VPN has been created, SSM Parameter Store is then used to distribute the Client Certificate and Key.  The helper script will check if a VPN with the name specified in the variables configuration exists, and if so will download them.
 
 ### Scope
- * All the steps listed within the AWS Administrator Guide.
- * Uploading the Client Certificate and Keys to AWS SSM.
- * Detect and use a VPN if it has already been configured.
+* All the steps listed within the AWS Administrator Guide.
+* Uploading the Client Certificate and Keys to AWS SSM.
+* Detect and use a VPN if it has already been configured.
 
 ### Software
 The following software is required to get the AWS ClientVPN up and running.
 
- * OpenVPN Easy-RSA3 (Automatic)
- * OpenVPN Client
+* AWS Command Line Interface
+* OpenVPN Client
+* OpenVPN Easy-RSA3 (Automatic)
 
 ## Installation
 
@@ -43,5 +44,5 @@ openvpn client-config.ovpn
 
 
 ## To Do
- [ ] Include the creation of a Security Group rather than using the VPN default
- [ ] Create a 'teardown' script to help clean up the VPN Configuration
+- [ ] Include the creation of a Security Group rather than using the VPN default
+- [ ] Create a 'teardown' script to help clean up the VPN Configuration
