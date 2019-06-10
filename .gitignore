@@ -1,0 +1,6 @@
+easy-rsa
+pki
+*.ovpn
+*.zip
+*.tgz
+*.tar*
