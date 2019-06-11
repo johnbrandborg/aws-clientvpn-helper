@@ -42,7 +42,6 @@ A file called 'client-config.ovpn' is created in the working directory.  If you 
 openvpn client-config.ovpn
 ```
 
-
 ## To Do
-- [ ] Include the creation of a Security Group rather than using the VPN default
-- [ ] Create a 'teardown' script to help clean up the VPN Configuration
+- [ ] Include the creation of a Security Group rather than using the VPC default
+- [X] Create a 'teardown' script to help clean up the VPN Configuration

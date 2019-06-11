@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "---------------------------- AWS Client VPN Helper ----------------------------"
+echo -e "---------------------------- AWS Client VPN Helper ----------------------------\n"
 
 # Load variables from Configuration file
 . variables.cfg
@@ -114,7 +114,6 @@ function acm-import-keys {
 function ssm-put-keys {
     echo "Loading Keys into SSM Parameter Store"
 
-    # zip ./pki/issued/$CLIENTNAME.zip ./pki/issued/$CLIENTNAME.crt
     aws ssm put-parameter \
         --name="/clientvpn/$CLIENTNAME.crt" \
         --description="Compressed Client Certificate for AWS Client VPN" \
@@ -123,7 +122,6 @@ function ssm-put-keys {
         --tier="Advanced" \
         --overwrite
 
-    # zip ./pki/private/$CLIENTNAME.zip ./pki/private/$CLIENTNAME.key
     aws ssm put-parameter \
         --name="/clientvpn/$CLIENTNAME.key" \
         --description="Compressed Client Key for AWS Client VPN" \
@@ -177,7 +175,7 @@ function create-client-config {
     if [ -a "client-config.ovpn" ]; then
         echo " - Previous Configuration file found.  Skipping."
     else
-        # TODO Only do this if variable is not there from Setup
+        
         ENDPOINTID=$(aws ec2 describe-client-vpn-endpoints \
                 --output=text \
                 --filters="Name=tag:Name,Values=$SERVERNAME"\
@@ -225,19 +223,19 @@ function check-existing-vpn {
                 --query="Parameter.Value" > ./pki/private/$CLIENTNAME.key
         fi
     elif [ "$CURRENTENDPOINT" == "" ]; then
-        while true; do
-            read -p "Client VPN doesn't exist.  Do you want one created? y or n " createopt
+        read -p "Client VPN doesn't exist.  Do you want one created? [y/n] " createopt
 
-            if [ $createopt == "y" ] || [ $createopt == "yes" ]; then
-                create-client-vpn; break
-            else
-                echo "Exiting"; exit
-            fi
-        done
+        if [ "$createopt" == "y" ] || [ "$createopt" == "yes" ]; then
+            create-client-vpn; break
+        else
+            echo "Exiting"; exit
+        fi
     else
         echo $CURRENTENDPOINT; exit
     fi
 }
+
+# Main Execution
 
 check-existing-vpn
 create-client-config
