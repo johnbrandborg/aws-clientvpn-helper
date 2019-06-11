@@ -14,8 +14,8 @@ for REQUIRED in ${REQUIRED_ARGUMENTS[@]}; do
     fi
 done
 
-# Make sure the working directory has correct
-if [ -d $WORKDIR ]; then
+# Make sure the working directory is present and has the setup script
+if [ -f "$WORKDIR/setup.sh" ]; then
     cd $WORKDIR
 else
     echo " ERROR: The working directory doesn't look valid. \
@@ -175,11 +175,10 @@ function create-client-config {
     if [ -a "client-config.ovpn" ]; then
         echo " - Previous Configuration file found.  Skipping."
     else
-        
-        ENDPOINTID=$(aws ec2 describe-client-vpn-endpoints \
+        : ${ENDPOINTID:=$(aws ec2 describe-client-vpn-endpoints \
                 --output=text \
                 --filters="Name=tag:Name,Values=$SERVERNAME"\
-                --query='ClientVpnEndpoints[].ClientVpnEndpointId')
+                --query='ClientVpnEndpoints[].ClientVpnEndpointId')}
 
         if [ -n "$ENDPOINTID" ]; then
             aws ec2 export-client-vpn-client-configuration \
@@ -226,7 +225,7 @@ function check-existing-vpn {
         read -p "Client VPN doesn't exist.  Do you want one created? [y/n] " createopt
 
         if [ "$createopt" == "y" ] || [ "$createopt" == "yes" ]; then
-            create-client-vpn; break
+            create-client-vpn
         else
             echo "Exiting"; exit
         fi

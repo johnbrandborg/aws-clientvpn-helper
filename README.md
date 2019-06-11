@@ -14,7 +14,7 @@ Once the AWS Client VPN has been created, SSM Parameter Store is then used to di
 ### Software
 The following software is required to get the AWS ClientVPN up and running.
 
-* AWS Command Line Interface
+* AWS Command Line Interface (Version >= 1.16.175)
 * OpenVPN Client
 * OpenVPN Easy-RSA3 (Automatic)
 
@@ -33,13 +33,19 @@ ln -s ~/Source/GitHub/johnbrandborg/aws-clientvpn-helper
 Simply run the script below, and follow the prompts.  This will create the AWS Client VPN and generate the keys necessary.
 
 ```shell
-setup.sh
+./setup.sh
 ```
 
 A file called 'client-config.ovpn' is created in the working directory.  If you have installed 'openvpn' with HomeBrew on Mac OSX simple run the following to create a VPN:
 
 ```shell
 openvpn client-config.ovpn
+```
+
+To remove the ClientVPN resources from AWS, (This includes Certificates & Keys in SSM Parameters, and Certificate Manager), run the teardown script.  Locally generated or stored certificates & keys, or software downloaded is not removed.  If you need to recreate the VPN, simply run the setup again.
+
+```shell
+./teardown.sh
 ```
 
 ## To Do

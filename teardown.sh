@@ -81,7 +81,7 @@ function remove-resources {
 read -p "Do you want to remove the Client VPN? [y/n] " createopt
 
 if [ "$createopt" == "y" ] || [ "$createopt" == "yes" ]; then
-    remove-resources; break
+    remove-resources
 else
     echo "Exiting"; exit
 fi
