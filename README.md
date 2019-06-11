@@ -39,7 +39,7 @@ Simply run the script below, and follow the prompts.  This will create the AWS C
 A file called 'client-config.ovpn' is created in the working directory.  If you have installed 'openvpn' with HomeBrew on Mac OSX simple run the following to create a VPN:
 
 ```shell
-openvpn client-config.ovpn
+sudo openvpn client-config.ovpn
 ```
 
 To remove the ClientVPN resources from AWS, (This includes Certificates & Keys in SSM Parameters, and Certificate Manager), run the teardown script.  Locally generated or stored certificates & keys, or software downloaded is not removed.  If you need to recreate the VPN, simply run the setup again.

@@ -10,16 +10,17 @@ REQUIRED_ARGUMENTS=("WORKDIR" "SERVERNAME" "CLIENTNAME")
 
 for REQUIRED in ${REQUIRED_ARGUMENTS[@]}; do
     if [ -z $(eval echo \$$REQUIRED) ]; then
-        echo -e " ERROR: Configuration is missing the argument $REQUIRED.\nRequired: ${REQUIRED_ARGUMENTS[@]}."; exit 1
+        echo -e " ERROR: Configuration is missing the argument $REQUIRED.\n \
+        Required: ${REQUIRED_ARGUMENTS[@]}."; exit 1
     fi
 done
 
 # Make sure the working directory has correct
-if [ -d $WORKDIR ]; then
+if [ -f "$WORKDIR/`basename "$0"`"  ]; then
     cd $WORKDIR
 else
     echo " ERROR: The working directory doesn't look valid. \
-    Please make sure you update variables.cfg"; exit
+    Please make sure you update variables.cfg"; exit 1
 fi
 
 # Operational Function

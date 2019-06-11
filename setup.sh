@@ -10,16 +10,17 @@ REQUIRED_ARGUMENTS=("WORKDIR" "SERVERNAME" "CLIENTNAME" "VPNCIDRBLOCK")
 
 for REQUIRED in ${REQUIRED_ARGUMENTS[@]}; do
     if [ -z $(eval echo \$$REQUIRED) ]; then
-        echo -e " ERROR: Configuration is missing the argument $REQUIRED.\nRequired: ${REQUIRED_ARGUMENTS[@]}."; exit 1
+        echo -e " ERROR: Configuration is missing the argument $REQUIRED.\n \
+        Required: ${REQUIRED_ARGUMENTS[@]}."; exit 1
     fi
 done
 
 # Make sure the working directory is present and has the setup script
-if [ -f "$WORKDIR/setup.sh" ]; then
+if [ -f "$WORKDIR/`basename "$0"`" ]; then
     cd $WORKDIR
 else
     echo " ERROR: The working directory doesn't look valid. \
-    Please make sure you update variables.cfg"; exit
+    Please make sure you update variables.cfg"; exit 1
 fi
 
 # Menu Functions
@@ -77,18 +78,24 @@ function create-keys {
     $EASYRSAPATH/easyrsa build-client-full $CLIENTNAME nopass
 }
 
+function collect-acm-arns {
+    echo "Check and Collect the ARNs for the ACM Certificates"
+
+    QUERY="'CertificateSummaryList[?DomainName==\`$SERVERNAME\`].CertificateArn'"
+    : ${SERVERCERTARN=$(eval aws acm list-certificates \
+                --output=text \
+                --query=$QUERY)}
+
+    QUERY="'CertificateSummaryList[?DomainName==\`$CLIENTNAME\`].CertificateArn'"
+    : ${CLIENTCERTARN:=$(eval aws acm list-certificates \
+                --output=text \
+                --query=$QUERY)}
+}
+
 function acm-import-keys {
     echo "Importing RSA Keys into AWS ACM and SSM Parameter Store"
 
-    QUERY="'CertificateSummaryList[?DomainName==\`$SERVERNAME\`].CertificateArn'"
-    SERVERCERTARN=$(eval aws acm list-certificates \
-                --output=text \
-                --query=$QUERY)
-
-    QUERY="'CertificateSummaryList[?DomainName==\`$CLIENTNAME\`].CertificateArn'"
-    CLIENTCERTARN=$(eval aws acm list-certificates \
-                --output=text \
-                --query=$QUERY)
+    collect-acm-arns
 
     if [ -n "$SERVERCERTARN" ] && [ -n "$CLIENTCERTARN" ]; then
         echo " - Certicates already exists in AWS ACM"
@@ -106,7 +113,7 @@ function acm-import-keys {
             --certificate=file://./pki/issued/$CLIENTNAME.crt \
             --private-key=file://./pki/private/$CLIENTNAME.key \
             --certificate-chain=file://./pki/ca.crt
-        
+
         ssm-put-keys
     fi
 }
@@ -120,7 +127,7 @@ function ssm-put-keys {
         --value=file://./pki/issued/$CLIENTNAME.crt \
         --type="SecureString" \
         --tier="Advanced" \
-        --overwrite
+        --overwrite > /dev/null
 
     aws ssm put-parameter \
         --name="/clientvpn/$CLIENTNAME.key" \
@@ -128,7 +135,7 @@ function ssm-put-keys {
         --value=file://./pki/private/$CLIENTNAME.key \
         --type="SecureString" \
         --tier="Advanced" \
-        --overwrite
+        --overwrite > /dev/null
 }
 
 function create-client-vpn {
@@ -137,9 +144,10 @@ function create-client-vpn {
     acm-import-keys
     select-vpc-cidr
     select-subnet-id $VPCID
-
     echo ""
-    
+
+    collect-acm-arns
+
     aws logs create-log-group --log-group-name="/aws/clientvpn" 2>/dev/null
     aws logs create-log-stream \
         --log-group-name="/aws/clientvpn" \
@@ -148,9 +156,12 @@ function create-client-vpn {
     aws ec2 create-client-vpn-endpoint \
         --client-cidr-block="$VPNCIDRBLOCK" \
         --server-certificate-arn="$SERVERCERTARN" \
-        --authentication-options="Type=certificate-authentication,MutualAuthentication={ClientRootCertificateChainArn=$CLIENTCERTARN}" \
-        --connection-log-options="Enabled=true,CloudwatchLogGroup=/aws/clientvpn,CloudwatchLogStream=$SERVERNAME" \
-        --tag-specifications="ResourceType=client-vpn-endpoint,Tags=[{Key=Name,Value=$SERVERNAME}]"
+        --authentication-options="Type=certificate-authentication, \
+            MutualAuthentication={ClientRootCertificateChainArn=$CLIENTCERTARN}" \
+        --connection-log-options="Enabled=true,CloudwatchLogGroup=/aws/clientvpn, \
+            CloudwatchLogStream=$SERVERNAME" \
+        --tag-specifications="ResourceType=client-vpn-endpoint, \
+            Tags=[{Key=Name,Value=$SERVERNAME}]"
 
     ENDPOINTID=$(aws ec2 describe-client-vpn-endpoints \
         --output=text \
@@ -166,7 +177,7 @@ function create-client-vpn {
         --target-network-cidr="$VPCCIDR" \
         --authorize-all-groups
     
-    echo -e "\n AWS Client VPN setup process complete"
+    echo -e "\nAWS Client VPN setup process complete"
 }
 
 function create-client-config {
@@ -188,7 +199,7 @@ function create-client-config {
             echo "cert $WORKDIR/pki/issued/$CLIENTNAME.crt" >> client-config.ovpn
             echo "key $WORKDIR/pki/private/$CLIENTNAME.key" >> client-config.ovpn
         else
-            echo " ERROR: No Client VPN Endpoint could be found."
+            echo " ERROR: No Client VPN Endpoint could be found."; exit 1
         fi
     
     fi
