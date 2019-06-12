@@ -26,7 +26,7 @@ fi
 # Operational Function
 
 function clean-up-keys {
-    echo -e "Cleanup all the local Certificates & Keys, and OpenVPN Configuration\n"
+    echo -e "Cleanup all the local Certificates & Keys, and downloaded Software\n"
     rm -fr ./easy-rsa
     rm -fr ./pki
     echo -e "\nProceedure completed."
@@ -34,7 +34,7 @@ function clean-up-keys {
 
 # Main Execution
 
-read -p "Do you want to cleanup the local Certificates & Keys, and Configuration? [y/n] " createopt
+read -p "Do you want to cleanup the local Certificates & Keys, and downloaded Software? [y/n] " createopt
 
 if [ "$createopt" == "y" ] || [ "$createopt" == "yes" ]; then
     clean-up-keys
