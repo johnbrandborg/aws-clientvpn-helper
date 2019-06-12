@@ -6,7 +6,7 @@ echo -e "---------------------------- AWS Client VPN Helper --------------------
 . variables.cfg
 
 # Check that all variables are available
-REQUIRED_ARGUMENTS=("WORKDIR" "OVPNCFGFILE")
+REQUIRED_ARGUMENTS=("WORKDIR")
 
 for REQUIRED in ${REQUIRED_ARGUMENTS[@]}; do
     if [ -z $(eval echo \$$REQUIRED) ]; then
@@ -15,7 +15,7 @@ Required variables are ${REQUIRED_ARGUMENTS[@]}."; exit 1
     fi
 done
 
-# Make sure the working directory has correct
+# Make sure the working directory is present and has the setup script
 if [ -f "$WORKDIR/`basename "$0"`" ]; then
     cd $WORKDIR
 else
@@ -23,24 +23,7 @@ else
     Please make sure you update variables.cfg"; exit 1
 fi
 
-# Operational Function
-
-function clean-up-keys {
-    echo -e "Cleaning up all of the above\n"
-    rm -fr ./easy-rsa
-    rm -fr ./pki
-    rm $OVPNCFGFILE openvpn.log 2> /dev/null
-    echo -e "Proceedure completed."
-}
-
 # Main Execution
 
-read -p "Do you want to cleanup the local Certificates & Keys, Logs and Binaries? [y/n] " createopt
-
-if [ "$createopt" == "y" ] || [ "$createopt" == "yes" ]; then
-    clean-up-keys
-else
-    echo "Exiting"; exit
-fi
-
-
+echo -e "\nStopping all OpenVPN tasks found running\n"
+sudo killall openvpn

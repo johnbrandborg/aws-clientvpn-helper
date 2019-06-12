@@ -1,6 +1,7 @@
+*.log
+*.ovpn
+*.tar*
+*.tgz
+*.zip
 easy-rsa
 pki
-*.ovpn
-*.zip
-*.tgz
-*.tar*
