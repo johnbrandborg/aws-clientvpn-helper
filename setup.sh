@@ -62,7 +62,7 @@ function select-subnet-id {
 # Operational Function
 
 function create-keys {
-    echo "Generating RSA Keys"
+    echo "Creating Certificate and Keys"
 
     # Install OpenVPN's Easy-RSA for generating keys
     if [ ! -d $WORKDIR/easy-rsa ]; then
@@ -72,8 +72,11 @@ function create-keys {
         rm easy-rsa.tgz
     fi
 
+    echo " - Initialising and Building CA"
     $EASYRSAPATH/easyrsa init-pki
     $EASYRSAPATH/easyrsa build-ca nopass
+
+    echo " - Generating Server/Client Certificates"
     $EASYRSAPATH/easyrsa build-server-full $SERVERNAME nopass
     $EASYRSAPATH/easyrsa build-client-full $CLIENTNAME nopass
 }
@@ -102,7 +105,7 @@ function acm-import-keys {
             create-keys
         fi
 
-        echo " - Importing Certificates & Keys"
+        echo " - Certicates are being imported into Certificate Manager"
 
         aws acm import-certificate \
             --certificate=file://./pki/issued/$SERVERNAME.crt \
@@ -114,28 +117,24 @@ function acm-import-keys {
             --private-key=file://./pki/private/$CLIENTNAME.key \
             --certificate-chain=file://./pki/ca.crt > /dev/null
 
-        ssm-put-keys
+        echo " - Placing Client Certificate & Key into Parameter Store"
+
+        aws ssm put-parameter \
+            --name="/clientvpn/$CLIENTNAME.crt" \
+            --description="Compressed Client Certificate for AWS Client VPN" \
+            --value=file://./pki/issued/$CLIENTNAME.crt \
+            --type="SecureString" \
+            --tier="Advanced" \
+            --overwrite > /dev/null
+
+        aws ssm put-parameter \
+            --name="/clientvpn/$CLIENTNAME.key" \
+            --description="Compressed Client Key for AWS Client VPN" \
+            --value=file://./pki/private/$CLIENTNAME.key \
+            --type="SecureString" \
+            --tier="Advanced" \
+            --overwrite > /dev/null
     fi
-}
-
-function ssm-put-keys {
-    echo "Loading Keys into SSM Parameter Store"
-
-    aws ssm put-parameter \
-        --name="/clientvpn/$CLIENTNAME.crt" \
-        --description="Compressed Client Certificate for AWS Client VPN" \
-        --value=file://./pki/issued/$CLIENTNAME.crt \
-        --type="SecureString" \
-        --tier="Advanced" \
-        --overwrite > /dev/null
-
-    aws ssm put-parameter \
-        --name="/clientvpn/$CLIENTNAME.key" \
-        --description="Compressed Client Key for AWS Client VPN" \
-        --value=file://./pki/private/$CLIENTNAME.key \
-        --type="SecureString" \
-        --tier="Advanced" \
-        --overwrite > /dev/null
 }
 
 function create-client-vpn {
@@ -149,7 +148,7 @@ function create-client-vpn {
     select-vpc-cidr
     select-subnet-id $VPCID
 
-    echo -e "\nCreating VPN now into the VPC and Subnet Selected\n"
+    echo -e "\nCreating the Client VPN witin the VPC and Subnet Selected\n"
 
     aws logs create-log-group --log-group-name="/aws/clientvpn" 2>/dev/null
     aws logs create-log-stream \
@@ -186,25 +185,20 @@ function create-client-vpn {
 function create-client-config {
     echo "Creating the OpenVPN Client Configuration file"
 
-    if [ -a "$OVPNCFGFILE" ]; then
-        echo " - Previous Configuration file found.  Skipping."
-    else
-        : ${ENDPOINTID:=$(aws ec2 describe-client-vpn-endpoints \
-                --output=text \
-                --filters="Name=tag:Name,Values=$SERVERNAME"\
-                --query='ClientVpnEndpoints[].ClientVpnEndpointId')}
+    : ${ENDPOINTID:=$(aws ec2 describe-client-vpn-endpoints \
+            --output=text \
+            --filters="Name=tag:Name,Values=$SERVERNAME"\
+            --query='ClientVpnEndpoints[].ClientVpnEndpointId')}
 
-        if [ -n "$ENDPOINTID" ]; then
-            aws ec2 export-client-vpn-client-configuration \
-                --client-vpn-endpoint-id $ENDPOINTID \
-                --output text > $OVPNCFGFILE
-        
-            echo "cert $WORKDIR/pki/issued/$CLIENTNAME.crt" >> $OVPNCFGFILE
-            echo "key $WORKDIR/pki/private/$CLIENTNAME.key" >> $OVPNCFGFILE
-        else
-            echo " ERROR: No Client VPN Endpoint could be found."; exit 1
-        fi
+    if [ -n "$ENDPOINTID" ]; then
+        aws ec2 export-client-vpn-client-configuration \
+            --client-vpn-endpoint-id $ENDPOINTID \
+            --output text > $OVPNCFGFILE
     
+        echo "cert $WORKDIR/pki/issued/$CLIENTNAME.crt" >> $OVPNCFGFILE
+        echo "key $WORKDIR/pki/private/$CLIENTNAME.key" >> $OVPNCFGFILE
+    else
+        echo " ERROR: No Client VPN Endpoint could be found."; exit 1
     fi
 }
 
@@ -253,4 +247,4 @@ function check-existing-vpn {
 check-existing-vpn
 create-client-config
 
-echo -e "\nPlease wait a several minutes for the VPN Association to complete before using the VPN"
+echo -e "\nPlease wait several minutes for new VPNs to complete the Association before use."
