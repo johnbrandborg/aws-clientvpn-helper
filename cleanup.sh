@@ -6,7 +6,7 @@ echo -e "---------------------------- AWS Client VPN Helper --------------------
 . variables.cfg
 
 # Check that all variables are available
-REQUIRED_ARGUMENTS=("WORKDIR")
+REQUIRED_ARGUMENTS=("WORKDIR" "OVPNCFGFILE")
 
 for REQUIRED in ${REQUIRED_ARGUMENTS[@]}; do
     if [ -z $(eval echo \$$REQUIRED) ]; then
@@ -29,7 +29,8 @@ function clean-up-keys {
     echo -e "Cleanup all the local Certificates & Keys, and downloaded Software\n"
     rm -fr ./easy-rsa
     rm -fr ./pki
-    echo -e "\nProceedure completed."
+    rm $OVPNCFGFILE 2> /dev/null
+    echo -e "Proceedure completed."
 }
 
 # Main Execution

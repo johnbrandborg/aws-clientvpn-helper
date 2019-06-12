@@ -6,7 +6,7 @@ echo -e "---------------------------- AWS Client VPN Helper --------------------
 . variables.cfg
 
 # Check that all variables are available
-REQUIRED_ARGUMENTS=("WORKDIR" "SERVERNAME" "CLIENTNAME" "OVPNCFGFILE")
+REQUIRED_ARGUMENTS=("WORKDIR" "SERVERNAME" "CLIENTNAME")
 
 for REQUIRED in ${REQUIRED_ARGUMENTS[@]}; do
     if [ -z $(eval echo \$$REQUIRED) ]; then
@@ -73,8 +73,6 @@ function remove-resources {
     if [ -n "$CLIENTCERTARN" ]; then
         aws acm delete-certificate --certificate-arn=$CLIENTCERTARN
     fi
-
-    rm -fr $OVPNCFGFILE
 
     echo -e "\nProceedure completed."
 }
