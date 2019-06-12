@@ -79,17 +79,15 @@ function create-keys {
 }
 
 function collect-acm-arns {
-    echo "Check and Collect the ARNs for the ACM Certificates"
-
     QUERY="'CertificateSummaryList[?DomainName==\`$SERVERNAME\`].CertificateArn'"
-    : ${SERVERCERTARN=$(eval aws acm list-certificates \
+    SERVERCERTARN=$(eval aws acm list-certificates \
                 --output=text \
-                --query=$QUERY)}
+                --query=$QUERY)
 
     QUERY="'CertificateSummaryList[?DomainName==\`$CLIENTNAME\`].CertificateArn'"
-    : ${CLIENTCERTARN:=$(eval aws acm list-certificates \
+    CLIENTCERTARN=$(eval aws acm list-certificates \
                 --output=text \
-                --query=$QUERY)}
+                --query=$QUERY)
 }
 
 function acm-import-keys {
@@ -104,15 +102,17 @@ function acm-import-keys {
             create-keys
         fi
 
+        echo " - Importing Certificates & Keys"
+
         aws acm import-certificate \
             --certificate=file://./pki/issued/$SERVERNAME.crt \
             --private-key=file://./pki/private/$SERVERNAME.key \
-            --certificate-chain=file://./pki/ca.crt
+            --certificate-chain=file://./pki/ca.crt > /dev/null
 
         aws acm import-certificate \
             --certificate=file://./pki/issued/$CLIENTNAME.crt \
             --private-key=file://./pki/private/$CLIENTNAME.key \
-            --certificate-chain=file://./pki/ca.crt
+            --certificate-chain=file://./pki/ca.crt > /dev/null
 
         ssm-put-keys
     fi
@@ -141,12 +141,15 @@ function ssm-put-keys {
 function create-client-vpn {
     echo "Creating Client VPN in AWS"
 
+    # Make sure ACM ARNs are present and known
     acm-import-keys
+    collect-acm-arns
+
+    # Gather Information about where to create the VPN
     select-vpc-cidr
     select-subnet-id $VPCID
-    echo ""
 
-    collect-acm-arns
+    echo -e "\nCreating VPN now into the VPC and Subnet Selected\n"
 
     aws logs create-log-group --log-group-name="/aws/clientvpn" 2>/dev/null
     aws logs create-log-stream \
