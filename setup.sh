@@ -6,12 +6,12 @@ echo -e "---------------------------- AWS Client VPN Helper --------------------
 . variables.cfg
 
 # Check that all variables are available
-REQUIRED_ARGUMENTS=("WORKDIR" "SERVERNAME" "CLIENTNAME" "VPNCIDRBLOCK")
+REQUIRED_ARGUMENTS=("WORKDIR" "SERVERNAME" "CLIENTNAME" "VPNCIDRBLOCK" "OVPNCFGFILE")
 
 for REQUIRED in ${REQUIRED_ARGUMENTS[@]}; do
     if [ -z $(eval echo \$$REQUIRED) ]; then
         echo -e " ERROR: Configuration is missing the argument $REQUIRED.\n \
-        Required: ${REQUIRED_ARGUMENTS[@]}."; exit 1
+Required variables are ${REQUIRED_ARGUMENTS[@]}."; exit 1
     fi
 done
 
@@ -184,9 +184,9 @@ function create-client-vpn {
 }
 
 function create-client-config {
-    echo "Creating OpenVPN Client Configuration file"
+    echo "Creating the OpenVPN Client Configuration file"
 
-    if [ -a "client-config.ovpn" ]; then
+    if [ -a "$OVPNCFGFILE" ]; then
         echo " - Previous Configuration file found.  Skipping."
     else
         : ${ENDPOINTID:=$(aws ec2 describe-client-vpn-endpoints \
@@ -197,10 +197,10 @@ function create-client-config {
         if [ -n "$ENDPOINTID" ]; then
             aws ec2 export-client-vpn-client-configuration \
                 --client-vpn-endpoint-id $ENDPOINTID \
-                --output text > client-config.ovpn
+                --output text > $OVPNCFGFILE
         
-            echo "cert $WORKDIR/pki/issued/$CLIENTNAME.crt" >> client-config.ovpn
-            echo "key $WORKDIR/pki/private/$CLIENTNAME.key" >> client-config.ovpn
+            echo "cert $WORKDIR/pki/issued/$CLIENTNAME.crt" >> $OVPNCFGFILE
+            echo "key $WORKDIR/pki/private/$CLIENTNAME.key" >> $OVPNCFGFILE
         else
             echo " ERROR: No Client VPN Endpoint could be found."; exit 1
         fi
@@ -252,3 +252,5 @@ function check-existing-vpn {
 
 check-existing-vpn
 create-client-config
+
+echo -e "\nPlease wait a several minutes for the VPN Association to complete before using the VPN"

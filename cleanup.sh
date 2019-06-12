@@ -6,12 +6,12 @@ echo -e "---------------------------- AWS Client VPN Helper --------------------
 . variables.cfg
 
 # Check that all variables are available
-REQUIRED_ARGUMENTS=("WORKDIR" "SERVERNAME" "CLIENTNAME")
+REQUIRED_ARGUMENTS=("WORKDIR")
 
 for REQUIRED in ${REQUIRED_ARGUMENTS[@]}; do
     if [ -z $(eval echo \$$REQUIRED) ]; then
         echo -e " ERROR: Configuration is missing the argument $REQUIRED.\n \
-        Required: ${REQUIRED_ARGUMENTS[@]}."; exit 1
+Required variables are ${REQUIRED_ARGUMENTS[@]}."; exit 1
     fi
 done
 
@@ -29,7 +29,6 @@ function clean-up-keys {
     echo -e "Cleanup all the local Certificates & Keys, and OpenVPN Configuration\n"
     rm -fr ./easy-rsa
     rm -fr ./pki
-    rm client-config.ovpn
     echo -e "\nProceedure completed."
 }
 

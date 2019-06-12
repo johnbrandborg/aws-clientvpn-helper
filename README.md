@@ -12,11 +12,11 @@ Once the AWS Client VPN has been created, SSM Parameter Store is then used to di
 * Detect and use a VPN if it has already been configured.
 
 ### Software
-The following software is required to get the AWS ClientVPN up and running.
+The following software is required to get the AWS ClientVPN setup, and connectivity established.
 
 * AWS Command Line Interface (Version >= 1.16.175)
-* OpenVPN Client
-* OpenVPN Easy-RSA3 (Automatic)
+* OpenVPN Easy-RSA3 (Downloaded Automatically)
+* OpenVPN Compatible Client
 
 ## Installation
 
@@ -36,7 +36,7 @@ Simply run the script below, and follow the prompts.  This will create the AWS C
 ./setup.sh
 ```
 
-A file called 'client-config.ovpn' is created in the working directory.  If you have installed 'openvpn' with HomeBrew on Mac OSX simple run the following to create a VPN:
+By default a file called 'client-config.ovpn' is created in the working directory. If you have installed 'openvpn' with HomeBrew on Mac OSX simple run the following to create a VPN:
 
 ```shell
 sudo openvpn client-config.ovpn
