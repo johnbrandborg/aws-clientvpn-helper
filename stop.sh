@@ -25,5 +25,5 @@ fi
 
 # Main Execution
 
-echo -e "\nStopping all OpenVPN tasks found running\n"
+echo -e "\nStopping all OpenVPN tasks found running (SUDO)\n"
 sudo killall openvpn

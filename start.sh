@@ -25,8 +25,12 @@ fi
 
 # Main Execution
 
-echo -e "\nStarting OpenVPN as a daemon task\n"
-sudo openvpn \
-    --daemon \
-    --config $OVPNCFGFILE \
-    --log-append openvpn.log
+echo -e "\nStarting OpenVPN as a daemon task (SUDO)\n"
+if [ -x "$(which openvpn)" ]; then
+    sudo openvpn \
+        --daemon \
+        --config $OVPNCFGFILE \
+        --log-append openvpn.log
+else
+    echo " ERROR: The OpenVPN executable could not be found. Exiting"; exit 1 
+fi
