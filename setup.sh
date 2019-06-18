@@ -99,13 +99,13 @@ function acm-import-keys {
     collect-acm-arns
 
     if [ -n "$SERVERCERTARN" ] && [ -n "$CLIENTCERTARN" ]; then
-        echo " - Certicates already exists in AWS ACM"
+        echo " - Certificates already exists in AWS ACM"
     else
         if [ ! -e "./pki/issued/$SERVERNAME.crt" ]; then
             create-keys
         fi
 
-        echo " - Certicates are being imported into Certificate Manager"
+        echo " - Certificates are being imported into Certificate Manager"
 
         aws acm import-certificate \
             --certificate=file://./pki/issued/$SERVERNAME.crt \
