@@ -30,7 +30,7 @@ if [ -x "$(which openvpn)" ]; then
     sudo openvpn \
         --daemon \
         --config $OVPNCFGFILE \
-        --log-append openvpn.log
+        --log openvpn.log
 else
     echo " ERROR: The OpenVPN executable could not be found. Exiting"; exit 1 
 fi
