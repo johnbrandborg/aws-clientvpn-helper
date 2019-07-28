@@ -26,6 +26,11 @@ fi
 # Main Execution
 
 echo -e "\nStarting OpenVPN as a daemon task (SUDO)\n"
+if [ ! -f openvpn.log ]; then
+    echo " - Creating new log file openvpn.log"
+    touch openvpn.log
+fi
+
 if [ -x "$(which openvpn)" ]; then
     sudo openvpn \
         --daemon \
