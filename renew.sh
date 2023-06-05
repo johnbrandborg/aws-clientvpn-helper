@@ -28,3 +28,19 @@ aws ssm put-parameter \
     --overwrite > /dev/null
 
 echo "New server certificate generated."
+
+ENDPOINTID=$(aws ec2 describe-client-vpn-endpoints \
+    --output=text \
+    --filters="Name=tag:Name,Values=$SERVERNAME" \
+    --query='ClientVpnEndpoints[].ClientVpnEndpointId')
+
+QUERY="'CertificateSummaryList[?DomainName==\`$SERVERNAME\`].CertificateArn'"
+SERVERCERTARN=$(eval aws acm list-certificates \
+            --output=text \
+            --query=$QUERY)
+
+aws ec2 modify-client-vpn-endpoint
+    --client-vpn-endpoint-id="$ENDPOINTID"
+    --server-certificate-arn="$SERVERCERTARN"
+
+echo "Updated VPN to use new server certificate."
