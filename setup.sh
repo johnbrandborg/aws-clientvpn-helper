@@ -178,13 +178,13 @@ function create-client-vpn {
 
     aws ec2 authorize-client-vpn-ingress \
         --client-vpn-endpoint-id="$ENDPOINTID" \
-        --target-network-cidr="0.0.0.0/0" \
+        --target-network-cidr="$VPCCIDR" \
         --authorize-all-groups
 
     aws ec2 create-client-vpn-route \
-        --description="Internet Route" \
+        --description="Local Route" \
         --client-vpn-endpoint-id=$ENDPOINTID \
-        --destination-cidr-block="0.0.0.0/0" \
+        --destination-cidr-block="$VPCCIDR" \
         --target-vpc-subnet-id="$SUBNETID"
 
     echo -e "\nAWS Client VPN setup process complete"
