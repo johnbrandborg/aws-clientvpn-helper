@@ -6,7 +6,7 @@ echo -e "---------------------------- AWS Client VPN Helper --------------------
 . variables.cfg
 
 # Check that all variables are available
-REQUIRED_ARGUMENTS=("WORKDIR" "SERVERNAME" "CLIENTNAME" "VPNCIDRBLOCK" "OVPNCFGFILE" "DNSSERVERS")
+REQUIRED_ARGUMENTS=("WORKDIR" "SERVERNAME" "CLIENTNAME" "VPNCIDRBLOCK" "OVPNCFGFILE" "DNSSERVERS" "SGID")
 
 for REQUIRED in ${REQUIRED_ARGUMENTS[@]}; do
     if [ -z $(eval echo \$$REQUIRED) ]; then
@@ -160,6 +160,7 @@ function create-client-vpn {
         --server-certificate-arn="$SERVERCERTARN" \
 	--split-tunnel \
 	--dns-servers="$DNSSERVERS" \
+	--security-group-ids="$SGID" \
         --authentication-options="Type=certificate-authentication, \
             MutualAuthentication={ClientRootCertificateChainArn=$CLIENTCERTARN}" \
         --connection-log-options="Enabled=true,CloudwatchLogGroup=/aws/clientvpn, \
