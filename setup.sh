@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 
 echo -e "---------------------------- AWS Client VPN Helper ----------------------------\n"
 
@@ -161,6 +162,7 @@ function create-client-vpn {
 	--split-tunnel \
 	--dns-servers="$DNSSERVERS" \
 	--security-group-ids="$SGID" \
+	--vpc-id="$VPCID" \
         --authentication-options="Type=certificate-authentication, \
             MutualAuthentication={ClientRootCertificateChainArn=$CLIENTCERTARN}" \
         --connection-log-options="Enabled=true,CloudwatchLogGroup=/aws/clientvpn, \
