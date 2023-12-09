@@ -108,14 +108,14 @@ function acm-import-keys {
         echo " - Certificates are being imported into Certificate Manager"
 
         aws acm import-certificate \
-            --certificate=file://./pki/issued/$SERVERNAME.crt \
-            --private-key=file://./pki/private/$SERVERNAME.key \
-            --certificate-chain=file://./pki/ca.crt > /dev/null
+            --certificate=fileb://./pki/issued/$SERVERNAME.crt \
+            --private-key=fileb://./pki/private/$SERVERNAME.key \
+            --certificate-chain=fileb://./pki/ca.crt > /dev/null
 
         aws acm import-certificate \
-            --certificate=file://./pki/issued/$CLIENTNAME.crt \
-            --private-key=file://./pki/private/$CLIENTNAME.key \
-            --certificate-chain=file://./pki/ca.crt > /dev/null
+            --certificate=fileb://./pki/issued/$CLIENTNAME.crt \
+            --private-key=fileb://./pki/private/$CLIENTNAME.key \
+            --certificate-chain=fileb://./pki/ca.crt > /dev/null
 
         echo " - Placing Client Certificate & Key into Parameter Store"
 
