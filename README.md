@@ -1,3 +1,6 @@
+:exclamation: This repository has been archived. I recommend using the offical client instead.
+https://aws.amazon.com/vpn/client-vpn-download/
+
 # aws-clientvpn-helper
 A BASH script to help quickly setup AWS Client VPN for Mutal Autentication
 
